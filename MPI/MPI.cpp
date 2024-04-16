@@ -5,6 +5,7 @@
 #include <algorithm> 
 #include <chrono> 
 #include <sstream> 
+#include <omp.h>
 
 void merge(std::vector<int>& arr, int left, int mid, int right) {
     int n1 = mid - left + 1;
@@ -90,13 +91,31 @@ int main(int argc, char** argv) {
             MPI_Bcast(arr.data(), n, MPI_INT, 0, MPI_COMM_WORLD);
         }
 
+        omp_set_num_threads(threads);
+
         merge_sort(arr, 0, arr.size() - 1);
 
         if (rank == 0) {
             auto end = std::chrono::steady_clock::now();
             auto diff = end - start;
             std::cout << "Sorting time with " << threads << " threads: " << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
+
+            /*std::stringstream ss;
+            ss << threads;
+            std::string thread_str = ss.str();
+
+            std::ofstream outfile("output_" + thread_str + ".txt");
+            if (!outfile.is_open()) {
+                std::cerr << "Failed to open output file." << std::endl;
+                MPI_Abort(MPI_COMM_WORLD, 1);
+            }
+            for (int num : arr) {
+                outfile << num << " ";
+            }
+            outfile.close();*/
         }
+
+        //std::cout << "Sorted numbers with " << threads << " threads written to file" << std::endl;
     }
 
     MPI_Finalize();
