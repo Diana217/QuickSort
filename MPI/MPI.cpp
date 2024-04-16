@@ -90,7 +90,6 @@ int main(int argc, char** argv) {
             MPI_Bcast(arr.data(), n, MPI_INT, 0, MPI_COMM_WORLD);
         }
 
-        // Паралельне сортування на кожному процесі
         merge_sort(arr, 0, arr.size() - 1);
 
         if (rank == 0) {
