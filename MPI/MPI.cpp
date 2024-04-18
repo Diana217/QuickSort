@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    std::ifstream infile("C:\\Users\\dulko\\source\\repos\\FileGeneration\\input3.txt");
+    std::ifstream infile("C:\\Users\\dulko\\source\\repos\\FileGeneration\\input20.txt");
     if (!infile.is_open()) {
         std::cerr << "Failed to open input file." << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
