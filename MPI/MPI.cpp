@@ -32,41 +32,40 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    std::ifstream infile("C:\\Users\\dulko\\source\\repos\\FileGeneration\\input20.txt");
+    std::ifstream infile("C:\\Users\\dulko\\source\\repos\\FileGeneration\\input10.txt");
     if (!infile.is_open()) {
         std::cerr << "Failed to open input file." << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
         return 1;
     }
 
-    const int num_threads[] = { 1, 2, 4, 8 };
+    std::vector<int> arr;
+    auto start = std::chrono::steady_clock::now();
 
-    for (int i = 0; i < sizeof(num_threads) / sizeof(num_threads[0]); ++i) {
-        int threads = num_threads[i];
-
-        std::vector<int> arr;
-        auto start = std::chrono::steady_clock::now();
-
-        int n = 0;
-        if (rank == 0) {
-            int num;
-            while (infile >> num) {
-                arr.push_back(num);
-            }
-            infile.close();
-            n = arr.size();
-
-            MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            MPI_Bcast(arr.data(), n, MPI_INT, 0, MPI_COMM_WORLD);
+    int n = 0;
+    if (rank == 0) {
+        int num;
+        while (infile >> num) {
+            arr.push_back(num);
         }
+        infile.close();
+        n = arr.size();
+    }
 
-        quick_sort(arr, 0, arr.size() - 1);
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        if (rank == 0) {
-            auto end = std::chrono::steady_clock::now();
-            auto diff = end - start;
-            std::cout << "Sorting time with " << threads << " threads: " << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-        }
+    if (rank != 0) {
+        arr.resize(n);
+    }
+
+    MPI_Bcast(arr.data(), n, MPI_INT, 0, MPI_COMM_WORLD);
+
+    quick_sort(arr, 0, arr.size() - 1);
+
+    if (rank == 0) {
+        auto end = std::chrono::steady_clock::now();
+        auto diff = end - start;
+        std::cout << "Sorting time: " << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
     }
 
     MPI_Finalize();
